@@ -398,9 +398,17 @@ function renderHoje(){
         <div class="kpi"><div class="v">${(M.ytdCal/1000).toFixed(0)}<small style="font-size:12px;color:var(--mut)">k kcal</small></div><div class="l">Calorias (aprox.)</div></div>
       </div>
     </section>
-    <button class="ghostbtn" id="discBtn">Desconectar Strava</button>
-    <div class="foot">Sincroniza ao abrir o app e no botão ↻ · ${M.all.length} atividades.</div>`;
+    <div style="display:flex;gap:8px">
+      <button class="ghostbtn" id="rtBtn" style="margin-top:4px;${M.realtime?'color:var(--good);border-color:rgba(61,220,132,.4)':''}">${M.realtime?'⚡ Tempo real ativo':'⚡ Ativar tempo real'}</button>
+      <button class="ghostbtn" id="discBtn" style="margin-top:4px">Desconectar</button>
+    </div>
+    <div class="foot">${M.realtime?'Atualiza sozinho a cada corrida (webhook do Strava).':'Sincroniza ao abrir o app e no botão ↻.'} · ${M.all.length} atividades.</div>`;
   $('discBtn').onclick=async()=>{ if(!confirm('Desconectar o Strava deste painel?'))return; await callFn('disconnect'); toast('Strava desconectado'); boot(); };
+  $('rtBtn').onclick=async()=>{ const b=$('rtBtn'); const old=b.textContent; b.textContent='Ativando…';
+    try{ const r=await callFn('subscribe');
+      if(r.ok){ M.realtime=true; toast(r.already?'Tempo real já estava ativo ⚡':'Tempo real ativado! ⚡'); renderHoje(); }
+      else { toast('Falha ao ativar — veja os logs'); b.textContent=old; }
+    }catch(e){ toast('Erro ao ativar'); b.textContent=old; } };
 }
 
 /* ===================== RENDER: EVOLUÇÃO ===================== */
@@ -549,7 +557,7 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showTab(b.data
 /* ===================== VIEW SWITCH + FLOW ===================== */
 function showView(v){ ['v-load','v-login','v-connect','v-app'].forEach(x=>$(x).classList.toggle('hide',x!==v)); }
 function applyAthlete(st){
-  const ath=st.athlete||{}; M.athleteName=ath.name||'';
+  const ath=st.athlete||{}; M.athleteName=ath.name||''; M.realtime=!!(st.meta&&st.meta.realtime);
   $('hName').textContent=ath.name||'dKonrad Run';
   $('hSync').textContent='sincronizado '+ago(st.meta&&st.meta.last_sync);
   if(ath.profile_pic){ $('hAva').src=ath.profile_pic; $('hAva').style.display=''; $('hLogo').style.display='none'; }
