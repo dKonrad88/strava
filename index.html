@@ -7,121 +7,208 @@
 <title>dKonrad Run — Strava</title>
 <style>
   :root{
-    --bg:#0b0f14; --card:#151c26; --card2:#1b2430; --line:#222d3a;
-    --txt:#e8eef6; --mut:#8a98ab; --mut2:#5d6b7d;
-    --acc:#fc4c02;            /* laranja Strava */
-    --acc2:#2ad4c4; --good:#3ddc84; --warn:#ffc24b; --bad:#ff5d6c; --info:#5aa9ff;
+    --bg:#0b0f14; --bg2:#0f141b; --card:#151c26; --card2:#1b2430;
+    --line:#222d3a; --txt:#e8eef6; --mut:#8a98ab; --mut2:#5d6b7d;
+    --acc:#fc4c02; --acc2:#2ad4c4; --good:#3ddc84; --warn:#ffc24b; --bad:#ff5d6c; --info:#5aa9ff;
     --grad:linear-gradient(135deg,#fc4c02,#ff8a3d);
+    --r:16px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
   html,body{background:#05080c;color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  /* moldura de celular no desktop; tela cheia no mobile */
-  .frame{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:0}
-  .phone{width:100%;max-width:430px;min-height:100vh;background:var(--bg);position:relative;overflow:hidden}
+  a{color:var(--acc)}
+  .frame{min-height:100vh;display:flex;align-items:center;justify-content:center}
+  .phone{width:100%;max-width:440px;height:100vh;background:var(--bg);position:relative;display:flex;flex-direction:column;overflow:hidden}
   @media(min-width:760px){
     body{background:radial-gradient(120% 120% at 50% 0%,#10161e,#05080c)}
     .frame{padding:24px}
-    .phone{min-height:0;height:860px;max-height:92vh;border-radius:44px;border:11px solid #0d1219;
-      box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 0 0 2px #1c2531;overflow-y:auto}
-    .phone::-webkit-scrollbar{display:none}
-    .notch{position:sticky;top:0;height:26px;display:flex;justify-content:center;z-index:60;background:var(--bg)}
+    .phone{height:880px;max-height:94vh;border-radius:46px;border:11px solid #0d1219;
+      box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 0 0 2px #1c2531}
+    .notch{height:26px;display:flex;justify-content:center;background:var(--bg);flex:0 0 auto;z-index:60}
     .notch::after{content:"";width:120px;height:20px;background:#0d1219;border-radius:0 0 16px 16px}
   }
   .notch{display:none}
-  a{color:var(--acc)}
+  .col{flex:1;min-height:0;display:flex;flex-direction:column}
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .scroll::-webkit-scrollbar{display:none}
+  .hide{display:none!important}
 
-  header{position:sticky;top:0;z-index:40;background:rgba(11,15,20,.9);backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  @media(min-width:760px){header{top:26px}}
+  /* header */
+  header{flex:0 0 auto;background:rgba(11,15,20,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+    padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px}
   .brand{display:flex;align-items:center;gap:10px;min-width:0}
-  .ava{width:38px;height:38px;border-radius:50%;background:var(--card2);object-fit:cover;flex:0 0 auto;border:1px solid var(--line)}
+  .ava{width:36px;height:36px;border-radius:11px;object-fit:cover;background:var(--card2);border:1px solid var(--line);flex:0 0 auto}
+  .logo{width:36px;height:36px;border-radius:11px;background:var(--grad);display:grid;place-items:center;font-weight:800;color:#fff;font-size:15px;flex:0 0 auto}
   .brand h1{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .brand small{display:block;color:var(--mut);font-size:11px}
-  .rbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--txt);
-    display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+  .rbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--txt);display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
   .rbtn:active{transform:scale(.94)} .rbtn svg{width:18px;height:18px}
   .spin{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 
-  main{padding:16px 14px 30px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
-  .card+.card{margin-top:12px}
-  .muted{color:var(--mut)} .center{text-align:center}
-  .sec{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);font-weight:700;margin:18px 4px 9px}
+  main{padding:15px 14px 22px}
+  .tab{display:none;animation:fade .3s ease}.tab.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  section{margin-bottom:17px}
+  .sechead{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 9px}
+  .sechead h2{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);font-weight:700}
+  .sechead .tag{font-size:10px;color:var(--mut2)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px}
+  .card+.card{margin-top:11px}
+  .soft{color:var(--mut)}
   .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--card2)}
-  .pill.g{color:var(--good);border-color:rgba(61,220,132,.3)} .pill.b{color:var(--bad);border-color:rgba(255,93,108,.3)}
+  .pill.g{color:var(--good);border-color:rgba(61,220,132,.3);background:rgba(61,220,132,.08)}
+  .pill.w{color:var(--warn);border-color:rgba(255,194,75,.3);background:rgba(255,194,75,.08)}
+  .pill.b{color:var(--bad);border-color:rgba(255,93,108,.3);background:rgba(255,93,108,.08)}
+  .pill.i{color:var(--info);border-color:rgba(90,169,255,.3);background:rgba(90,169,255,.08)}
+  .pill.a{color:var(--acc2);border-color:rgba(42,212,196,.3);background:rgba(42,212,196,.08)}
 
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:13px;
-    padding:14px;font-size:14px;font-weight:700;cursor:pointer;color:#fff;background:var(--grad);box-shadow:0 6px 18px rgba(252,76,2,.32)}
-  .btn:active{transform:scale(.98)}
-  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);box-shadow:none}
-  .btn.sm{width:auto;padding:9px 14px;font-size:12.5px}
+  .hero{background:radial-gradient(120% 140% at 0% 0%,#1a2433,#10161e);border:1px solid var(--line);border-radius:20px;padding:17px 16px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(252,76,2,.2),transparent 70%)}
+  .hero .hi{font-size:13px;color:var(--mut)}
+  .hero .big{font-size:22px;font-weight:800;margin:3px 0 2px}
+  .hero .sub{font-size:12px;color:var(--mut);position:relative;z-index:2}
 
-  input{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:13px;
-    color:var(--txt);font-size:14px;margin-top:8px}
-  input:focus{outline:none;border-color:var(--acc)}
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px}
+  .kpi .v{font-size:19px;font-weight:800}
+  .kpi .l{font-size:11px;color:var(--mut);margin-top:2px}
+  .kpi .d{font-size:10.5px;margin-top:5px;font-weight:600}
+  .up{color:var(--good)}.dn{color:var(--bad)}.fl{color:var(--mut)}
 
-  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 10px}
-  .kpi .v{font-size:18px;font-weight:800} .kpi .l{font-size:10.5px;color:var(--mut);margin-top:3px}
+  .coach{border:1px solid rgba(42,212,196,.25);background:linear-gradient(135deg,rgba(42,212,196,.10),rgba(42,212,196,.02))}
+  .coach .h{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;margin-bottom:8px}
+  .coach .dot{width:9px;height:9px;border-radius:50%;background:var(--acc2);box-shadow:0 0 0 4px rgba(42,212,196,.16)}
+  .coach p{margin:6px 0;font-size:13px;line-height:1.5;color:#cdd8e6}
 
-  .act{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--card);border:1px solid var(--line);border-radius:13px}
-  .act+.act{margin-top:8px}
-  .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:16px;flex:0 0 auto}
-  .ic.run{background:rgba(252,76,2,.13)} .ic.gym{background:rgba(90,169,255,.13)} .ic.ride{background:rgba(61,220,132,.13)} .ic.other{background:rgba(138,152,171,.13)}
-  .act .m{flex:1;min-width:0} .act .t{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gauge{display:flex;align-items:center;gap:16px}
+  .gtxt{font-size:13px;line-height:1.5;color:#cdd8e6}
+
+  .prog{height:10px;border-radius:999px;background:var(--card2);overflow:hidden;margin-top:8px}
+  .prog>i{display:block;height:100%;border-radius:999px;background:var(--grad)}
+  .prog.a>i{background:linear-gradient(90deg,#2ad4c4,#5aa9ff)}
+  .prog.g>i{background:linear-gradient(90deg,#3ddc84,#2ad4c4)}
+
+  .seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;margin-bottom:12px}
+  .seg button{flex:1;border:0;background:transparent;color:var(--mut);font-size:12.5px;font-weight:600;padding:8px 6px;border-radius:9px;cursor:pointer}
+  .seg button.on{background:var(--acc);color:#fff}
+
+  .act{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--card);border:1px solid var(--line);border-radius:13px;cursor:pointer}
+  .act+.act{margin-top:8px}.act:active{background:var(--card2)}
+  .ic{width:37px;height:37px;border-radius:11px;display:grid;place-items:center;font-size:16px;flex:0 0 auto}
+  .ic.run{background:rgba(252,76,2,.13)}.ic.gym{background:rgba(90,169,255,.13)}.ic.ride{background:rgba(61,220,132,.13)}.ic.other{background:rgba(138,152,171,.13)}
+  .act .m{flex:1;min-width:0}.act .t{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .act .s{font-size:11px;color:var(--mut);margin-top:2px}
-  .act .r{text-align:right;flex:0 0 auto} .act .r .p{font-size:13.5px;font-weight:800} .act .r .p2{font-size:10px;color:var(--mut);margin-top:1px}
+  .act .rt{text-align:right;flex:0 0 auto}.act .rt .p{font-size:13.5px;font-weight:800}.act .rt .p2{font-size:10px;color:var(--mut);margin-top:1px}
+  .act .chev{color:var(--mut2)}
+  .detail{margin-top:8px;padding:13px;background:var(--card2);border:1px dashed var(--line);border-radius:13px;display:none}
+  .detail.on{display:block}
+  .grid4{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .mini{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px}
+  .mini .mv{font-size:15px;font-weight:800}.mini .ml{font-size:10px;color:var(--mut);margin-top:2px}
+  .note{font-size:12px;color:#bcc8d8;line-height:1.5;margin-top:10px;padding:9px 11px;background:rgba(42,212,196,.06);border-left:3px solid var(--acc2);border-radius:7px}
 
-  .bars{display:flex;align-items:flex-end;gap:5px;height:64px;margin-top:6px}
-  .bars i{flex:1;background:var(--card2);border-radius:4px 4px 0 0;min-height:3px}
-  .bars i.on{background:var(--grad)}
+  .chart{width:100%;display:block}
+  .chlbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut2);margin-top:4px}
+  table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.t th{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--mut2);text-align:right;padding:7px 5px;font-weight:700}
+  table.t th:first-child,table.t td:first-child{text-align:left}
+  table.t td{padding:8px 5px;border-top:1px solid var(--line);text-align:right}
+  table.t tr td:first-child{font-weight:600}
 
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--card2);
-    border:1px solid var(--line);padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;
-    pointer-events:none;transition:.3s;z-index:90;max-width:86%;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  .barbox{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .barbox .bl{width:78px;font-size:12px;color:var(--mut);flex:0 0 auto}
+  .barbox .bt{flex:1;height:22px;border-radius:7px;background:var(--card2);overflow:hidden}
+  .barbox .bt>i{display:block;height:100%;border-radius:7px}
+  .barbox .bv{width:48px;text-align:right;font-size:12px;font-weight:700;flex:0 0 auto}
+
+  .pr{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+  .pr:first-child{border-top:0}.pr .pe{font-size:19px;width:28px;text-align:center}
+  .pr .pm{flex:1}.pr .pm .pt{font-size:13px;font-weight:600}.pr .pm .pd{font-size:11px;color:var(--mut)}
+  .pr .pv{font-size:16px;font-weight:800;color:var(--acc)}
+  .ins{font-size:13px;line-height:1.55;color:#cdd8e6}.ins b{color:var(--txt)}
+  .big-num{font-size:29px;font-weight:800}
+
+  /* nav */
+  nav{flex:0 0 auto;background:rgba(13,18,25,.96);border-top:1px solid var(--line);display:flex;padding:7px 6px}
+  nav button{flex:1;border:0;background:transparent;color:var(--mut2);display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;cursor:pointer;font-size:10px;font-weight:600;border-radius:12px}
+  nav button svg{width:21px;height:21px}
+  nav button.on{color:var(--acc)}
+
+  /* login / connect / load */
+  .pad{padding:0 18px}
+  input{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:13px;color:var(--txt);font-size:14px;margin-top:8px}
+  input:focus{outline:none;border-color:var(--acc)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:13px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;color:#fff;background:var(--grad);box-shadow:0 6px 18px rgba(252,76,2,.3)}
+  .btn:active{transform:scale(.98)} .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);box-shadow:none}
+  .blogo{width:54px;height:54px;border-radius:15px;background:var(--grad);display:grid;place-items:center;font-weight:800;color:#fff;font-size:22px;margin:0 auto 14px}
+  .center{text-align:center}
+  .spinbig{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;margin:30px auto}
+  .toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--line);padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.3s;z-index:90;max-width:84%;box-shadow:0 10px 30px rgba(0,0,0,.5)}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  .hide{display:none!important}
-  .spinbig{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}
-  .logo{width:54px;height:54px;border-radius:15px;background:var(--grad);display:grid;place-items:center;font-weight:800;color:#fff;font-size:22px;margin:0 auto 14px;box-shadow:0 8px 22px rgba(252,76,2,.35)}
-  .foot{text-align:center;color:var(--mut2);font-size:10.5px;margin-top:22px;line-height:1.6}
+  .foot{text-align:center;color:var(--mut2);font-size:10.5px;margin-top:18px;line-height:1.6}
+  .ghostbtn{width:100%;border:1px dashed var(--line);background:transparent;color:var(--mut);padding:11px;border-radius:12px;font-size:12.5px;font-weight:600;cursor:pointer;margin-top:4px}
 </style>
 </head>
 <body>
 <div class="frame"><div class="phone">
   <div class="notch"></div>
 
-  <!-- ===== LOADING ===== -->
-  <div id="v-load"><div class="spinbig"></div><p class="center muted" style="font-size:13px">Carregando…</p></div>
+  <!-- LOAD -->
+  <div id="v-load" class="col"><div class="scroll"><div class="spinbig"></div><p class="center soft" style="font-size:13px">Carregando…</p></div></div>
 
-  <!-- ===== LOGIN ===== -->
-  <div id="v-login" class="hide">
-    <main style="padding-top:60px">
-      <div class="logo">dK</div>
-      <h1 class="center" style="font-size:20px;font-weight:800">dKonrad Run</h1>
-      <p class="center muted" style="font-size:13px;margin-top:5px">Conector & painel do Strava</p>
-      <div class="card" style="margin-top:26px">
-        <input id="email" type="email" placeholder="E-mail" autocomplete="email">
-        <input id="pass" type="password" placeholder="Senha" autocomplete="current-password">
-        <button class="btn" id="loginBtn" style="margin-top:14px">Entrar</button>
-        <p class="center muted" style="font-size:11.5px;margin-top:12px">Mesmo login do seu HUB pessoal.</p>
-        <p id="loginErr" class="center" style="color:var(--bad);font-size:12px;margin-top:8px"></p>
-      </div>
-    </main>
-  </div>
+  <!-- LOGIN -->
+  <div id="v-login" class="col hide"><div class="scroll pad" style="padding-top:60px">
+    <div class="blogo">dK</div>
+    <h1 class="center" style="font-size:20px;font-weight:800">dKonrad Run</h1>
+    <p class="center soft" style="font-size:13px;margin-top:5px">Conector & painel do Strava</p>
+    <div class="card" style="margin-top:24px">
+      <input id="email" type="email" placeholder="E-mail" autocomplete="email">
+      <input id="pass" type="password" placeholder="Senha" autocomplete="current-password">
+      <button class="btn" id="loginBtn" style="margin-top:14px">Entrar</button>
+      <p class="center soft" style="font-size:11.5px;margin-top:12px">Mesmo login do seu HUB pessoal.</p>
+      <p id="loginErr" class="center" style="color:var(--bad);font-size:12px;margin-top:8px"></p>
+    </div>
+  </div></div>
 
-  <!-- ===== APP ===== -->
-  <div id="v-app" class="hide">
+  <!-- CONNECT -->
+  <div id="v-connect" class="col hide"><div class="scroll pad" style="padding-top:54px">
+    <div class="blogo">S</div>
+    <h2 class="center" style="font-size:18px;font-weight:800">Conecte seu Strava</h2>
+    <p class="center soft" style="font-size:13px;margin:8px 0 18px;line-height:1.5">Autorize uma vez e suas corridas e treinos sincronizam automaticamente neste painel.</p>
+    <button class="btn" id="connectBtn">Conectar com o Strava</button>
+    <p class="center soft" style="font-size:11px;margin-top:12px">A senha da API fica no servidor (Supabase), nunca aqui.</p>
+    <p id="connErr" class="center" style="color:var(--bad);font-size:12px;margin-top:10px"></p>
+  </div></div>
+
+  <!-- APP -->
+  <div id="v-app" class="col hide">
     <header>
       <div class="brand">
-        <img id="hAva" class="ava" alt="">
-        <div><h1 id="hName">—</h1><small id="hSync">—</small></div>
+        <img id="hAva" class="ava" alt="" style="display:none">
+        <div class="logo" id="hLogo">dK</div>
+        <div><h1 id="hName">dKonrad Run</h1><small id="hSync">—</small></div>
       </div>
       <button class="rbtn" id="syncBtn" title="Sincronizar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
       </button>
     </header>
-    <main id="appBody"></main>
+    <div class="scroll">
+      <main>
+        <div class="tab on" id="t-hoje"></div>
+        <div class="tab" id="t-evol"></div>
+        <div class="tab" id="t-trein"></div>
+        <div class="tab" id="t-metas"></div>
+        <div class="tab" id="t-ins"></div>
+      </main>
+    </div>
+    <nav id="nav">
+      <button data-t="hoje" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/></svg>Hoje</button>
+      <button data-t="evol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 3-4 3 3 5-7"/></svg>Evolução</button>
+      <button data-t="trein"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4 6 14h5l-1 6 7-10h-5z"/></svg>Treinos</button>
+      <button data-t="metas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</button>
+      <button data-t="ins"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>Insights</button>
+    </nav>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -130,162 +217,388 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ===================== CONFIG ===================== */
-const SUPA_URL = 'https://jlouesrrmqeauzlgvrpw.supabase.co';
-const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsb3Vlc3JybXFlYXV6bGd2cnB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDg1MjYsImV4cCI6MjA5NjY4NDUyNn0.hRgHOpPR8KBPHqBGXGXVPmNv01tCRmOPfB3Qk6pF6eI';
-const STRAVA_CID = '261805';
-const REDIRECT = 'https://dkonrad88.github.io/strava/';
-const FN = SUPA_URL + '/functions/v1/strava-sync';
-const SCOPE = 'read,activity:read_all,profile:read_all';
-const AUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT)}&approval_prompt=auto&scope=${SCOPE}`;
+const SUPA_URL='https://jlouesrrmqeauzlgvrpw.supabase.co';
+const SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsb3Vlc3JybXFlYXV6bGd2cnB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDg1MjYsImV4cCI6MjA5NjY4NDUyNn0.hRgHOpPR8KBPHqBGXGXVPmNv01tCRmOPfB3Qk6pF6eI';
+const STRAVA_CID='261805', REDIRECT='https://dkonrad88.github.io/strava/';
+const FN=SUPA_URL+'/functions/v1/strava-sync', SCOPE='read,activity:read_all,profile:read_all';
+const AUTH_URL=`https://www.strava.com/oauth/authorize?client_id=${STRAVA_CID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT)}&approval_prompt=auto&scope=${SCOPE}`;
+const sb=window.supabase.createClient(SUPA_URL,SUPA_ANON);
 
-const sb = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+/* zonas reais do atleta (Strava) */
+const HRZ=[119,148,163,178];
+const NOW=new Date();
 
 /* ===================== HELPERS ===================== */
-const $ = id => document.getElementById(id);
-const pad = n => String(n).padStart(2,'0');
-const MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-function show(v){ ['v-load','v-login','v-app'].forEach(x=>$(x).classList.toggle('hide',x!==v)); }
-function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2600); }
-function pace(sk){ if(sk==null) return '—'; const m=Math.floor(sk/60),s=Math.round(sk%60); return m+':'+pad(s); }
-function clock(sec){ sec=Math.round(sec||0); const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60); return h?h+'h'+pad(m):m+'min'; }
-function ago(iso){ if(!iso) return '—'; const d=(Date.now()-new Date(iso))/1000;
-  if(d<90) return 'agora há pouco'; if(d<3600) return Math.floor(d/60)+' min atrás';
-  if(d<86400) return Math.floor(d/3600)+'h atrás'; return Math.floor(d/86400)+'d atrás'; }
-function actIcon(t){ if(t==='Run'||t==='TrailRun'||t==='VirtualRun') return ['run','🏃'];
-  if(t==='WeightTraining'||t==='Workout') return ['gym','🏋️']; if(t==='Ride'||t==='VirtualRide') return ['ride','🚴']; return ['other','📍']; }
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function pace(sk){ if(sk==null)return '—'; const m=Math.floor(sk/60),s=Math.round(sk%60); return m+':'+pad(s); }
+function clock(sec){ sec=Math.round(sec||0); const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60; return h?`${h}:${pad(m)}:${pad(s)}`:`${m}:${pad(s)}`; }
+function dur(sec){ const m=Math.round((sec||0)/60); if(m<60)return m+' min'; return Math.floor(m/60)+'h'+pad(m%60); }
+function dmy(d){ return pad(d.getDate())+'/'+pad(d.getMonth()+1); }
+function ago(iso){ if(!iso)return '—'; const d=(Date.now()-new Date(iso))/1000; if(d<90)return 'agora há pouco'; if(d<3600)return Math.floor(d/60)+' min atrás'; if(d<86400)return Math.floor(d/3600)+'h atrás'; return Math.floor(d/86400)+'d atrás'; }
+function daysAgo(d){ return Math.floor((NOW-d)/86400000); }
+function within(d,days){ const diff=(NOW-d)/86400000; return diff>=0&&diff<days; }
+function mondayOf(d){ const x=new Date(d); const w=(x.getDay()+6)%7; x.setHours(0,0,0,0); x.setDate(x.getDate()-w); return x; }
+function riegel(t1,d1,d2){ return t1*Math.pow(d2/d1,1.06); }
+function hrZone(hr){ if(hr<=HRZ[0])return 1; if(hr<=HRZ[1])return 2; if(hr<=HRZ[2])return 3; if(hr<=HRZ[3])return 4; return 5; }
+function median(a){ if(!a.length)return 0; const s=a.slice().sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2500); }
 
-async function callFn(action, extra={}){
-  const { data:{ session } } = await sb.auth.getSession();
+async function callFn(action,extra={}){
+  const {data:{session}}=await sb.auth.getSession();
   if(!session) throw new Error('no_session');
-  const r = await fetch(FN, { method:'POST',
-    headers:{ 'Content-Type':'application/json', 'apikey':SUPA_ANON, 'Authorization':'Bearer '+session.access_token },
-    body: JSON.stringify({ action, ...extra }) });
+  const r=await fetch(FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_ANON,'Authorization':'Bearer '+session.access_token},body:JSON.stringify({action,...extra})});
   return r.json();
 }
-async function loadState(){
-  const { data } = await sb.from('strava_state').select('key,value');
-  const m={}; (data||[]).forEach(r=>m[r.key]=r.value); return m;
+async function loadState(){ const {data}=await sb.from('strava_state').select('key,value'); const m={}; (data||[]).forEach(r=>m[r.key]=r.value); return m; }
+
+/* ===================== ADAPTER (live -> ACT) ===================== */
+function typeOf(a){ const t=a.type||a.sport||'';
+  if(['Run','TrailRun','VirtualRun'].includes(t))return 'run';
+  if(['WeightTraining','Workout','Crossfit','HighIntensityIntervalTraining'].includes(t))return 'gym';
+  if(['Ride','VirtualRide','MountainBikeRide','GravelRide','EBikeRide'].includes(t))return 'ride';
+  return 'other'; }
+let ACT=[];
+function buildACT(items){
+  ACT=(items||[]).map(a=>{
+    const type=typeOf(a), km=(a.distance_m||0)/1000, s=a.moving_s||0, hr=a.avg_hr||null, isRun=type==='run';
+    const cal=a.calories??(isRun?Math.round(km*62):0);
+    const o={ d:(a.start||'').slice(0,10), type, km, s, el:a.elev_gain_m||0, re:a.relative_effort||0, cal,
+      cad:a.avg_cadence||null, hr, indoor:!!a.indoor, name:a.name||'', date:new Date(a.start),
+      pace:(isRun&&km>0)?s/km:null, ef:(hr&&km>0&&isRun)?(km*1000/(s/60))/hr:null };
+    return o;
+  }).filter(a=>a.date && !isNaN(a.date.getTime()));
 }
 
-/* ===================== RENDER ===================== */
-function renderConnect(){
-  $('appBody').innerHTML = `
-    <div class="card center" style="margin-top:30px">
-      <div class="logo" style="background:var(--grad)">S</div>
-      <h2 style="font-size:17px;font-weight:800">Conecte seu Strava</h2>
-      <p class="muted" style="font-size:13px;margin:8px 0 16px;line-height:1.5">Autorize uma vez e suas corridas e treinos passam a sincronizar automaticamente neste painel.</p>
-      <button class="btn" id="connectBtn">Conectar com o Strava</button>
-      <p class="muted" style="font-size:11px;margin-top:12px">Seguro: a senha da API fica no servidor (Supabase), nunca aqui.</p>
-    </div>`;
-  $('connectBtn').onclick = ()=>{ location.href = AUTH_URL; };
+/* ===================== CHARTS ===================== */
+function lineChart(vals,opt={}){
+  const W=320,H=140,pl=6,pr=6,pt=14,pb=20; const real=vals.filter(v=>v!=null); if(!real.length)return '';
+  let mn=Math.min(...real),mx=Math.max(...real); if(mn===mx){mn-=1;mx+=1;} const padv=(mx-mn)*.12; mn-=padv; mx+=padv;
+  const n=vals.length, X=i=>pl+(W-pl-pr)*(n<=1?.5:i/(n-1)), Y=v=>{let t=(v-mn)/(mx-mn); if(opt.invert)t=1-t; return pt+(H-pt-pb)*(1-t);};
+  const col=opt.color||'var(--acc)'; let pts=[],dots='',area='';
+  vals.forEach((v,i)=>{ if(v==null)return; const x=X(i).toFixed(1),y=Y(v).toFixed(1); pts.push(x+','+y); dots+=`<circle cx="${x}" cy="${y}" r="2.5" fill="${col}"/>`; });
+  const poly=`<polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(pts.length){ const f=pts[0].split(',')[0],l=pts[pts.length-1].split(',')[0]; area=`<polygon points="${f},${H-pb} ${pts.join(' ')} ${l},${H-pb}" fill="${col}" opacity="0.07"/>`; }
+  const fmt=opt.fmt||(x=>Math.round(x)); let xl='';
+  if(opt.xlabels){ const step=Math.max(1,Math.ceil(n/4)); for(let i=0;i<n;i+=step){ if(vals[i]==null)continue; xl+=`<text x="${X(i)}" y="${H-6}" fill="var(--mut2)" font-size="9" text-anchor="middle">${opt.xlabels[i]}</text>`; } }
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><text x="${pl}" y="11" fill="var(--mut2)" font-size="9">${fmt(opt.invert?mn+padv:mx-padv)}${opt.unit||''}</text><text x="${pl}" y="${H-pb+9}" fill="var(--mut2)" font-size="9">${fmt(opt.invert?mx-padv:mn+padv)}${opt.unit||''}</text>${area}${poly}${dots}${xl}</svg>`;
+}
+function barChart(vals,labels,opt={}){
+  const W=320,H=140,pl=6,pr=6,pt=14,pb=20,mx=Math.max(...vals,1),n=vals.length,gap=4,bw=(W-pl-pr)/n-gap; let bars='';
+  vals.forEach((v,i)=>{ const h=(H-pt-pb)*(v/mx),x=pl+i*((W-pl-pr)/n)+gap/2,y=H-pb-h,col=opt.colorFn?opt.colorFn(i,v):'var(--acc)';
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,1).toFixed(1)}" rx="3" fill="${col}"/>`;
+    if(opt.labels){ const step=Math.max(1,Math.ceil(n/6)); if(i%step===0)bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-6}" fill="var(--mut2)" font-size="8.5" text-anchor="middle">${labels[i]}</text>`; } });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><text x="${pl}" y="11" fill="var(--mut2)" font-size="9">${Math.round(mx)}${opt.unit||''}</text>${bars}</svg>`;
+}
+function gaugeSVG(ratio){
+  const cx=70,cy=70,r=56,A=x=>Math.PI*(1-x/2),ang=A(Math.max(0,Math.min(2,ratio)));
+  const seg=(a0,a1,col)=>{const x0=cx+r*Math.cos(a0),y0=cy-r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy-r*Math.sin(a1);return `<path d="M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${col}" stroke-width="11" stroke-linecap="round"/>`;};
+  const nx=cx+(r-4)*Math.cos(ang),ny=cy-(r-4)*Math.sin(ang);
+  return `<svg width="140" height="84" viewBox="0 0 140 84">${seg(A(0),A(0.8),'var(--info)')}${seg(A(0.8),A(1.3),'var(--good)')}${seg(A(1.3),A(1.5),'var(--warn)')}${seg(A(1.5),A(2),'var(--bad)')}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4" fill="#fff"/><text x="${cx}" y="80" fill="var(--txt)" font-size="15" font-weight="800" text-anchor="middle">${ratio.toFixed(2)}</text></svg>`;
 }
 
-function renderDash(st){
-  const ath = st.athlete||{}, tot = st.totals||{}, acts = (st.activities&&st.activities.items)||[];
-  const wk = tot.week||{}, mo = tot.month||{}, yt = tot.ytd||{};
-  $('hName').textContent = ath.name || 'Atleta';
-  $('hSync').textContent = 'sincronizado '+ago(st.meta&&st.meta.last_sync);
-  if(ath.profile_pic){ $('hAva').src = ath.profile_pic; } else { $('hAva').style.background='var(--card2)'; }
+/* ===================== COMPUTE ===================== */
+let M={};
+function compute(){
+  const runs=ACT.filter(a=>a.type==='run').sort((a,b)=>a.date-b.date);
+  const all=ACT.slice().sort((a,b)=>a.date-b.date);
+  const sum=(arr,f)=>arr.reduce((s,a)=>s+f(a),0);
+  M={runs,all};
+  M.last7=all.filter(a=>within(a.date,7));
+  M.prev7=all.filter(a=>{const dd=(NOW-a.date)/86400000;return dd>=7&&dd<14;});
+  M.last7km=sum(M.last7.filter(a=>a.type==='run'),a=>a.km);
+  M.prev7km=sum(M.prev7.filter(a=>a.type==='run'),a=>a.km);
+  M.last7load=sum(M.last7,a=>a.re);
+  M.prev7load=sum(M.prev7,a=>a.re);
+  M.last7sess=M.last7.length;
+  M.ytdRuns=runs.length; M.ytdKm=sum(runs,a=>a.km); M.ytdElev=sum(runs,a=>a.el);
+  M.ytdCal=sum(all,a=>a.cal); M.ytdHours=sum(all,a=>a.s)/3600; M.gymCount=all.filter(a=>a.type==='gym').length;
+  const acute=sum(all.filter(a=>within(a.date,7)),a=>a.re), chronic=sum(all.filter(a=>within(a.date,28)),a=>a.re)/4;
+  M.acwr=chronic>0?acute/chronic:0; M.acute=acute; M.chronic=chronic;
+  M.lastRun=runs[runs.length-1]; M.daysSinceRun=M.lastRun?daysAgo(M.lastRun.date):null;
+  const daysSet=new Set(all.map(a=>a.d)); let streak=0;
+  if(all.length){ let cur=new Date(all[all.length-1].date); cur.setHours(0,0,0,0);
+    while(daysSet.has(cur.getFullYear()+'-'+pad(cur.getMonth()+1)+'-'+pad(cur.getDate()))){ streak++; cur.setDate(cur.getDate()-1); } }
+  M.streak=streak;
+  const wk={}; runs.forEach(r=>{const k=mondayOf(r.date).toISOString().slice(0,10); wk[k]=(wk[k]||0)+r.km;});
+  const wkeys=Object.keys(wk).sort(); M.weeks=wkeys.slice(-14).map(k=>({k,km:wk[k],lab:dmy(new Date(k+'T08:00:00'))}));
+  M.bestWeek=Math.max(0,...Object.values(wk));
+  M.paceRuns=runs.filter(r=>r.km>=5&&!r.indoor);
+  M.efRuns=runs.filter(r=>r.ef!=null).sort((a,b)=>a.date-b.date);
+  M.efPeak=M.efRuns.length?Math.max(...M.efRuns.map(r=>r.ef)):0;
+  const easy=M.efRuns.filter(r=>r.hr<=150);
+  M.bestEasyEf=easy.length?Math.max(...easy.map(r=>r.ef)):0;
+  M.curEasyEf=easy.length?easy[easy.length-1].ef:0;
+  M.easyPct=M.bestEasyEf?Math.min(100,M.curEasyEf/M.bestEasyEf*100):0;
+  const buckets={easy:0,mod:0,hard:0,ekm:0,mkm:0,hkm:0};
+  M.efRuns.forEach(r=>{const z=hrZone(r.hr); if(z<=2){buckets.easy++;buckets.ekm+=r.km;}else if(z===3){buckets.mod++;buckets.mkm+=r.km;}else{buckets.hard++;buckets.hkm+=r.km;}});
+  M.pol=buckets; const tk=buckets.ekm+buckets.mkm+buckets.hkm||1;
+  M.polPct={easy:buckets.ekm/tk*100,mod:buckets.mkm/tk*100,hard:buckets.hkm/tk*100};
+  const mo={}; runs.forEach(r=>{const k=r.date.getFullYear()+'-'+pad(r.date.getMonth()+1);(mo[k]=mo[k]||{km:0,n:0,s:0,long:0});mo[k].km+=r.km;mo[k].n++;mo[k].s+=r.s;mo[k].long=Math.max(mo[k].long,r.km);});
+  M.months=Object.keys(mo).sort().slice(-6).map(k=>({k,mes:MES[+k.split('-')[1]-1],...mo[k]}));
+  M.longest=runs.length?Math.max(...runs.map(r=>r.km)):0;
+  // bests (estimados do melhor pace sustentado)
+  let b5=Infinity,b10=Infinity,bp=Infinity,fastRun=null;
+  runs.forEach(r=>{ if(r.indoor)return; if(r.km>=5){b5=Math.min(b5,r.pace*5); if(r.pace<bp){bp=r.pace;fastRun=r;}} if(r.km>=10)b10=Math.min(b10,r.pace*10); });
+  M.best={k5:isFinite(b5)?b5:null,k10:isFinite(b10)?b10:null,fastPace:isFinite(bp)?bp:null,fastRun};
+  M.maxCal=runs.length?Math.max(...runs.map(r=>r.cal)):0;
+}
 
-  // mini gráfico: volume por dia (últimos 14 dias) das corridas
-  const days=[]; const today=new Date(); today.setHours(0,0,0,0);
-  for(let i=13;i>=0;i--){ const d=new Date(today); d.setDate(d.getDate()-i); days.push({d,km:0}); }
-  acts.forEach(a=>{ const ad=new Date(a.start); ad.setHours(0,0,0,0);
-    const slot=days.find(x=>x.d.getTime()===ad.getTime()); if(slot) slot.km+=(a.distance_m||0)/1000; });
-  const mx=Math.max(0.1,...days.map(d=>d.km));
-  const bars=days.map(d=>`<i class="${d.km>0?'on':''}" style="height:${Math.max(3,d.km/mx*100)}%" title="${d.km.toFixed(1)}km"></i>`).join('');
-
-  const recent = acts.slice(0,12).map(a=>{
-    const [cls,emo]=actIcon(a.type);
-    const main = a.type==='WeightTraining'? clock(a.moving_s) : ((a.distance_m/1000).toFixed(2)+' km');
-    const right = a.pace_s_per_km? `<div class="p">${pace(a.pace_s_per_km)}</div><div class="p2">/km${a.avg_hr?' · '+Math.round(a.avg_hr)+'bpm':''}</div>`
-      : `<div class="p2">esforço ${a.relative_effort??'—'}</div>`;
-    const dd=new Date(a.start);
-    return `<div class="act"><div class="ic ${cls}">${emo}</div>
-      <div class="m"><div class="t">${a.name||a.type}</div><div class="s">${pad(dd.getDate())} ${MES[dd.getMonth()]} · ${main}${a.indoor?' · indoor':''}</div></div>
-      <div class="r">${right}</div></div>`;
-  }).join('');
-
-  $('appBody').innerHTML = `
-    <div class="sec">Esta semana</div>
-    <div class="kpis">
-      <div class="kpi"><div class="v">${(wk.distance_km||0).toFixed(1)}<small style="font-size:11px;color:var(--mut)">km</small></div><div class="l">Distância</div></div>
-      <div class="kpi"><div class="v">${wk.runs||0}</div><div class="l">Corridas</div></div>
-      <div class="kpi"><div class="v">${clock(wk.time_s)}</div><div class="l">Tempo</div></div>
+/* ===================== RENDER: HOJE ===================== */
+function deltaTag(cur,prev,inv){
+  if(!prev)return '<span class="d fl">— novo período</span>';
+  const dp=(cur-prev)/prev*100, better=inv?dp<0:dp>0, cls=Math.abs(dp)<3?'fl':(better?'up':'dn'), ar=dp>0?'▲':(dp<0?'▼':'•');
+  return `<span class="d ${cls}">${ar} ${Math.abs(dp).toFixed(0)}% vs 7d ant.</span>`;
+}
+function coachMsg(){
+  const a=M.acwr; let pill,txt;
+  if(a>1.5){pill='<span class="pill b">Carga alta</span>';txt='Carga subiu rápido. Priorize <b>descanso ou regenerativo leve</b> pra absorver e evitar lesão.';}
+  else if(a>0&&a<0.8){pill='<span class="pill i">Reconstruindo base</span>';txt='Fase mais leve. <b>Reconstrua a base com corridas fáceis (Z2)</b> e suba o volume ~10%/semana.';}
+  else if(a===0){pill='<span class="pill i">Sem carga recente</span>';txt='Pouca atividade nos últimos dias. Que tal <b>uma corrida fácil</b> pra retomar?';}
+  else {pill='<span class="pill g">Carga equilibrada</span>';txt='Carga bem dosada. Tem espaço pra um <b>treino de qualidade</b> (longo, ritmo ou tiros) nos próximos dias.';}
+  return {pill,txt,extra:`Hoje, treino fácil ideal: <b>${pace(1000/2.85)}–${pace(1000/3.137)}/km</b> · FC <b>140–150</b>.`};
+}
+function renderHoje(){
+  const c=coachMsg(), km7=M.last7km.toFixed(1), load7=Math.round(M.last7load);
+  const meta21=Math.min(100,M.longest/21.0975*100);
+  $('t-hoje').innerHTML=`
+    <div class="hero">
+      <div class="hi">Olá, ${ (M.athleteName||'Diego').split(' ')[0] } 👋 ${pad(NOW.getDate())} ${MES[NOW.getMonth()]}</div>
+      <div class="big">Bora evoluir hoje?</div>
+      <div class="sub">${M.daysSinceRun!=null?`Última corrida há <b>${M.daysSinceRun} dias</b> · `:''}sequência ativa de <b>${M.streak} dia(s)</b> · ${M.ytdRuns} corridas</div>
     </div>
-
-    <div class="card" style="margin-top:12px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <strong style="font-size:13px">Volume · 14 dias</strong>
-        <span class="muted" style="font-size:11px">mês: ${(mo.distance_km||0).toFixed(0)} km · ano: ${(yt.distance_km||0).toFixed(0)} km</span>
+    <section style="margin-top:14px"><div class="card coach">
+      <div class="h"><span class="dot"></span> Coach do dia ${c.pill}</div>
+      <p>${c.txt}</p><p style="color:#9fb0c4">${c.extra}</p>
+    </div></section>
+    <section>
+      <div class="sechead"><h2>Últimos 7 dias</h2><span class="tag">${M.last7sess} sessões</span></div>
+      <div class="kpis">
+        <div class="kpi"><div class="v">${km7} <small style="font-size:12px;color:var(--mut)">km</small></div><div class="l">Volume corrido</div>${deltaTag(M.last7km,M.prev7km,false)}</div>
+        <div class="kpi"><div class="v">${load7}</div><div class="l">Carga (esforço)</div>${deltaTag(M.last7load,M.prev7load,false)}</div>
+        <div class="kpi"><div class="v">${M.last7.filter(a=>a.type==='run').length}</div><div class="l">Corridas</div><div class="d fl">${M.last7.filter(a=>a.type==='gym').length} de academia</div></div>
+        <div class="kpi"><div class="v">${M.acwr.toFixed(2)}</div><div class="l">Índice de carga</div><div class="d ${M.acwr===0?'fl':(M.acwr<0.8?'fl':(M.acwr<=1.3?'up':'dn'))}">${M.acwr===0?'sem dados':(M.acwr<0.8?'zona segura':(M.acwr<=1.3?'faixa ideal':'atenção'))}</div></div>
       </div>
-      <div class="bars">${bars}</div>
-    </div>
-
-    <div class="sec">Atividades recentes</div>
-    ${recent || '<p class="muted center" style="font-size:13px;padding:20px">Nenhuma atividade ainda.</p>'}
-
-    <div style="margin-top:16px"><button class="btn ghost sm" id="discBtn" style="width:100%">Desconectar Strava</button></div>
-    <div class="foot">${(st.activities&&st.activities.count)||0} atividades sincronizadas.<br>Atualiza ao abrir o app e no botão ↻.</div>`;
-
-  $('discBtn').onclick = async ()=>{
-    if(!confirm('Desconectar o Strava deste painel?')) return;
-    await callFn('disconnect'); toast('Strava desconectado'); boot();
-  };
+    </section>
+    <section>
+      <div class="sechead"><h2>Rumo aos 21K</h2><span class="tag">meia maratona</span></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><div><span class="big-num">${M.longest.toFixed(1)}</span><span class="soft" style="font-size:14px"> / 21,1 km</span></div><span class="pill a">${meta21.toFixed(0)}%</span></div>
+        <div class="prog a"><i style="width:${meta21}%"></i></div>
+        <p class="soft" style="font-size:12px;margin:10px 0 0">Faltam <b style="color:var(--txt)">${Math.max(0,21.0975-M.longest).toFixed(1)} km</b> no seu maior longo. +1,5 km a cada 2 semanas e você chega lá.</p>
+      </div>
+    </section>
+    <section>
+      <div class="sechead"><h2>Resumo do histórico</h2></div>
+      <div class="kpis">
+        <div class="kpi"><div class="v">${M.ytdKm.toFixed(0)}<small style="font-size:12px;color:var(--mut)"> km</small></div><div class="l">Distância total</div></div>
+        <div class="kpi"><div class="v">${M.ytdHours.toFixed(0)}<small style="font-size:12px;color:var(--mut)"> h</small></div><div class="l">Tempo em movimento</div></div>
+        <div class="kpi"><div class="v">${(M.ytdElev/1000).toFixed(1)}<small style="font-size:12px;color:var(--mut)"> km</small></div><div class="l">Elevação acumulada</div></div>
+        <div class="kpi"><div class="v">${(M.ytdCal/1000).toFixed(0)}<small style="font-size:12px;color:var(--mut)">k kcal</small></div><div class="l">Calorias (aprox.)</div></div>
+      </div>
+    </section>
+    <button class="ghostbtn" id="discBtn">Desconectar Strava</button>
+    <div class="foot">Sincroniza ao abrir o app e no botão ↻ · ${M.all.length} atividades.</div>`;
+  $('discBtn').onclick=async()=>{ if(!confirm('Desconectar o Strava deste painel?'))return; await callFn('disconnect'); toast('Strava desconectado'); boot(); };
 }
 
-/* ===================== FLOW ===================== */
-async function refresh(showToast){
-  const ic = $('syncBtn').querySelector('svg'); ic.classList.add('spin');
-  try{
-    const res = await callFn('sync');
-    if(res && res.connected===false){ renderConnect(); return; }
-    const st = await loadState(); renderDash(st);
-    if(showToast) toast('Sincronizado · '+((res&&res.count)||0)+' atividades');
-  }catch(e){ toast('Erro ao sincronizar'); }
+/* ===================== RENDER: EVOLUÇÃO ===================== */
+function renderEvol(){
+  const wkVals=M.weeks.map(w=>w.km),wkLab=M.weeks.map(w=>w.lab),avgWk=wkVals.length?wkVals.reduce((a,b)=>a+b,0)/wkVals.length:0;
+  const pr=M.paceRuns,paceVals=pr.map(r=>r.pace),paceLab=pr.map(r=>dmy(r.date));
+  const ef=M.efRuns,efVals=ef.map(r=>r.ef),efLab=ef.map(r=>dmy(r.date));
+  const cadRuns=M.runs.filter(r=>r.cad),cadVals=cadRuns.map(r=>r.cad);
+  $('t-evol').innerHTML=`
+    <section><div class="sechead"><h2>Volume semanal</h2><span class="tag">14 sem · km</span></div>
+      <div class="card">${wkVals.length?barChart(wkVals,wkLab,{labels:true,unit:'km',colorFn:(i,v)=>v>=avgWk?'var(--acc)':'#3a4756'}):'<p class="soft center" style="font-size:13px">Sem dados.</p>'}
+        <div class="chlbl"><span>média ${avgWk.toFixed(1)} km/sem</span><span>pico ${M.bestWeek.toFixed(1)} km</span></div></div></section>
+    <section><div class="sechead"><h2>Ritmo por corrida</h2><span class="tag">≥5 km</span></div>
+      <div class="card">${pr.length?lineChart(paceVals,{invert:true,color:'var(--acc)',xlabels:paceLab,fmt:pace}):'<p class="soft center" style="font-size:13px">Sem corridas ≥5km.</p>'}
+        <div class="chlbl"><span>↑ mais rápido</span>${pr.length?`<span>último: ${pace(pr[pr.length-1].pace)}/km</span>`:''}</div></div></section>
+    <section><div class="sechead"><h2>Eficiência aeróbica (IEA)</h2><span class="tag">★ exclusivo</span></div>
+      <div class="card">${ef.length?lineChart(efVals,{color:'var(--acc2)',xlabels:efLab,fmt:x=>x.toFixed(2)}):'<p class="soft center" style="font-size:13px">Precisa de corridas com FC.</p>'}
+        ${ef.length?`<div class="chlbl"><span>quanto maior, melhor</span><span>pico ${M.efPeak.toFixed(2)}</span></div>`:''}
+        <div class="note">Velocidade que você produz por batimento (m/min ÷ FC). Sobe = motor mais econômico. Compare em corridas <b>fáceis</b>.</div></div></section>
+    <section><div class="sechead"><h2>Cadência</h2><span class="tag">passos/min</span></div>
+      <div class="card">${cadVals.length?lineChart(cadVals,{color:'var(--info)',fmt:x=>Math.round(x)}):'<p class="soft center" style="font-size:13px">Sem dados.</p>'}
+        ${cadVals.length?`<div class="chlbl"><span>média ${(cadVals.reduce((a,b)=>a+b,0)/cadVals.length).toFixed(0)} spm</span><span>alvo 85–90</span></div>`:''}</div></section>
+    <section><div class="sechead"><h2>Mês a mês</h2></div>
+      <div class="card" style="padding:6px 13px 12px"><table class="t">
+        <tr><th>Mês</th><th>Corridas</th><th>Km</th><th>Pace</th><th>Maior</th></tr>
+        ${M.months.map(m=>`<tr><td>${m.mes}</td><td>${m.n}</td><td>${m.km.toFixed(0)}</td><td>${pace(m.s/m.km)}</td><td>${m.long.toFixed(1)}</td></tr>`).join('')}
+      </table></div></section>`;
+}
+
+/* ===================== RENDER: TREINOS ===================== */
+let trFilter='all';
+function renderTrein(){
+  let list=ACT.slice().sort((a,b)=>b.date-a.date);
+  if(trFilter!=='all')list=list.filter(a=>a.type===trFilter);
+  const rows=list.map((a,i)=>{
+    const id='a'+i, ic=a.type==='gym'?'gym':(a.type==='ride'?'ride':(a.type==='run'?'run':'other'));
+    const icon=a.type==='gym'?'🏋️':(a.type==='ride'?'🚴':(a.type==='run'?'🏃':'📍'));
+    const main=a.type==='gym'||a.type==='other'?dur(a.s):a.km.toFixed(2)+' km';
+    const right=a.type==='gym'||a.type==='other'?`<div class="p2">esforço ${a.re||'—'}</div>`:`<div class="p">${pace(a.pace)}</div><div class="p2">/km${a.hr?' · '+Math.round(a.hr)+'bpm':''}</div>`;
+    let det='';
+    if(a.type==='run'){
+      const simil=M.runs.filter(r=>Math.abs(r.km-a.km)<=1.5&&!r.indoor);
+      const avgP=simil.length?simil.reduce((s,r)=>s+r.pace,0)/simil.length:a.pace;
+      const dp=avgP?((a.pace-avgP)/avgP*100):0;
+      const cmp=a.indoor?'Treino indoor — fora das comparações de pace de rua.':(Math.abs(dp)<1.5?'No mesmo ritmo da sua média p/ essa distância.':(dp<0?`<b style="color:var(--good)">${Math.abs(dp).toFixed(0)}% mais rápido</b> que sua média p/ distância parecida.`:`${Math.abs(dp).toFixed(0)}% mais lento que sua média (dia fácil/terreno).`));
+      det=`<div class="detail" id="d${id}"><div class="grid4">
+        <div class="mini"><div class="mv">${clock(a.s)}</div><div class="ml">Tempo</div></div>
+        <div class="mini"><div class="mv">${pace(a.pace)}</div><div class="ml">Pace /km</div></div>
+        <div class="mini"><div class="mv">${a.km.toFixed(2)}</div><div class="ml">Km</div></div>
+        <div class="mini"><div class="mv">${a.hr?Math.round(a.hr):'—'}</div><div class="ml">FC média</div></div>
+        <div class="mini"><div class="mv">${a.el} m</div><div class="ml">Elevação</div></div>
+        <div class="mini"><div class="mv">${a.re||'—'}</div><div class="ml">Esforço</div></div>
+        <div class="mini"><div class="mv">${a.cad?a.cad.toFixed(0):'—'}</div><div class="ml">Cadência</div></div>
+        <div class="mini"><div class="mv">${a.cal||'—'}</div><div class="ml">Kcal</div></div>
+        <div class="mini"><div class="mv">${a.ef?a.ef.toFixed(2):'—'}</div><div class="ml">IEA</div></div>
+      </div><div class="note">${cmp}</div></div>`;
+    } else {
+      det=`<div class="detail" id="d${id}"><div class="grid4">
+        <div class="mini"><div class="mv">${dur(a.s)}</div><div class="ml">Duração</div></div>
+        <div class="mini"><div class="mv">${a.re||'—'}</div><div class="ml">Esforço</div></div>
+        <div class="mini"><div class="mv">${a.cal||'—'}</div><div class="ml">Kcal</div></div>
+      </div><div class="note">Entra no seu <b>índice de carga</b> e ajuda a economia de corrida e prevenção de lesão.</div></div>`;
+    }
+    return `<div><div class="act" data-d="d${id}"><div class="ic ${ic}">${icon}</div>
+      <div class="m"><div class="t">${a.name||(a.type==='gym'?'Musculação':'Atividade')}</div>
+        <div class="s">${pad(a.date.getDate())} ${MES[a.date.getMonth()]} · ${main}${a.indoor?' · indoor':''}</div></div>
+      <div class="rt">${right}</div><div class="chev">›</div></div>${det}</div>`;
+  }).join('');
+  $('t-trein').innerHTML=`
+    <div class="seg">
+      <button data-f="all" class="${trFilter==='all'?'on':''}">Tudo (${ACT.length})</button>
+      <button data-f="run" class="${trFilter==='run'?'on':''}">Corridas (${M.runs.length})</button>
+      <button data-f="gym" class="${trFilter==='gym'?'on':''}">Academia (${M.gymCount})</button>
+    </div>${rows||'<p class="soft center" style="font-size:13px;padding:20px">Nada por aqui.</p>'}
+    <div class="foot">Toque numa atividade para detalhes e comparação automática.</div>`;
+  document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{trFilter=b.dataset.f;renderTrein();});
+  document.querySelectorAll('.act').forEach(el=>el.onclick=()=>{const d=$(el.dataset.d);document.querySelectorAll('.detail.on').forEach(x=>{if(x!==d)x.classList.remove('on')});d.classList.toggle('on');});
+}
+
+/* ===================== RENDER: METAS ===================== */
+function renderMetas(){
+  const ref = M.best.k10? {t:M.best.k10,d:10} : (M.best.k5? {t:M.best.k5,d:5} : null);
+  let preds='';
+  if(ref){
+    const list=[['⚡','5 km',M.best.k5||riegel(ref.t,ref.d,5),'estimado'],['🔥','10 km',M.best.k10||riegel(ref.t,ref.d,10),'estimado'],['🎯','15 km',riegel(ref.t,ref.d,15),'projeção'],['🏅','21 km',riegel(ref.t,ref.d,21.0975),'projeção · meta'],['🏔️','42 km',riegel(ref.t,ref.d,42.195),'projeção otim.']];
+    preds=list.map(p=>`<div class="pr"><div class="pe">${p[0]}</div><div class="pm"><div class="pt">${p[1]}</div><div class="pd">${p[3]}</div></div><div class="pv">${clock(p[2])}</div></div>`).join('');
+  } else preds='<p class="soft center" style="font-size:13px;padding:14px">Precisa de uma corrida ≥5 km pra estimar.</p>';
+  const meta21t=ref?clock(riegel(ref.t,ref.d,21.0975)):'—';
+  $('t-metas').innerHTML=`
+    <section><div class="sechead"><h2>Previsão de provas</h2><span class="tag">Riegel</span></div>
+      <div class="card" style="padding:6px 13px">${preds}
+        <div class="note">Estimado pelo seu melhor pace sustentado. Previsões assumem treino específico — quanto mais longo, mais otimista. Pra baixar o tempo, o segredo está nos km fáceis (Insights).</div></div></section>
+    <section><div class="sechead"><h2>Meta: Meia Maratona</h2></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><div><span class="big-num">${M.longest.toFixed(1)}</span><span class="soft" style="font-size:14px"> / 21,1 km</span></div><span class="pill a">${(M.longest/21.0975*100).toFixed(0)}%</span></div>
+        <div class="prog a"><i style="width:${Math.min(100,M.longest/21.0975*100)}%"></i></div>
+        <p class="soft" style="font-size:12.5px;margin:11px 0 0;line-height:1.55">Plano: 1 longo/semana subindo <b style="color:var(--txt)">+1,5 km a cada 2 semanas</b>, em ritmo fácil. Tempo-alvo na chegada: <b style="color:var(--acc)">~${meta21t}</b>.</p></div></section>
+    <section><div class="sechead"><h2>Mural de recordes</h2></div>
+      <div class="card" style="padding:6px 13px">
+        <div class="pr"><div class="pe">📏</div><div class="pm"><div class="pt">Maior distância</div><div class="pd">recorde</div></div><div class="pv">${M.longest.toFixed(1)}<small style="font-size:12px"> km</small></div></div>
+        <div class="pr"><div class="pe">⚡</div><div class="pm"><div class="pt">Melhor 5 km</div><div class="pd">pace sustentado</div></div><div class="pv">${M.best.k5?clock(M.best.k5):'—'}</div></div>
+        <div class="pr"><div class="pe">🔥</div><div class="pm"><div class="pt">Melhor 10 km</div><div class="pd">pace sustentado</div></div><div class="pv">${M.best.k10?clock(M.best.k10):'—'}</div></div>
+        <div class="pr"><div class="pe">💨</div><div class="pm"><div class="pt">Pace médio top</div><div class="pd">${M.best.fastRun?dmy(M.best.fastRun.date)+' · '+M.best.fastRun.km.toFixed(1)+' km':'—'}</div></div><div class="pv">${M.best.fastPace?pace(M.best.fastPace):'—'}</div></div>
+        <div class="pr"><div class="pe">📅</div><div class="pm"><div class="pt">Maior semana</div><div class="pd">volume</div></div><div class="pv">${M.bestWeek.toFixed(1)}<small style="font-size:12px"> km</small></div></div>
+        <div class="pr"><div class="pe">🔋</div><div class="pm"><div class="pt">Mais calorias</div><div class="pd">numa corrida</div></div><div class="pv">${M.maxCal||'—'}</div></div>
+      </div></section>`;
+}
+
+/* ===================== RENDER: INSIGHTS ===================== */
+function renderIns(){
+  const a=M.acwr; let az,ac,at;
+  if(a===0){az='Sem carga';ac='i';at='Sem atividade recente o bastante pra calcular. Volte a treinar e o índice aparece.';}
+  else if(a<0.8){az='Zona segura / destreino';ac='i';at='Carga abaixo da base — ótimo pra recuperar, mas correndo pouco a forma cai. Pode subir tranquilo.';}
+  else if(a<=1.3){az='Faixa ideal 🎯';ac='g';at='Dose certa: estímulo suficiente sem pico de risco. Mantenha.';}
+  else if(a<=1.5){az='Atenção';ac='w';at='Carga subiu rápido. Segure o ritmo de aumento esta semana.';}
+  else {az='Risco de lesão';ac='b';at='Pico de carga muito acima da base — janela clássica de lesão. Reduza.';}
+  const p=M.polPct, hasEf=M.efRuns.length>=1, hasEasy=M.bestEasyEf>0;
+  $('t-ins').innerHTML=`
+    <div class="foot" style="margin:0 0 14px;text-align:left;color:var(--mut)">Indicadores que o Strava/Garmin <b style="color:var(--txt)">não mostram assim</b> — pra te fazer evoluir, não só registrar.</div>
+    <section><div class="sechead"><h2>① Termômetro de carga</h2><span class="tag">risco · ACWR</span></div>
+      <div class="card"><div class="gauge"><div>${gaugeSVG(a)}</div><div class="gtxt"><span class="pill ${ac}">${az}</span><p style="margin:9px 0 0">${at}</p></div></div>
+        <div class="note">Relação entre os <b>últimos 7 dias</b> (${Math.round(M.acute)}) e a <b>média de 4 semanas</b> (${Math.round(M.chronic)}). Fora de 0,8–1,3 multiplica o risco de lesão. <b>Inclui corrida + academia.</b></div></div></section>
+    ${hasEasy?`<section><div class="sechead"><h2>② Eficiência fácil</h2><span class="tag">vs seu melhor</span></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><div class="ins">Sua eficiência em ritmo fácil hoje</div><span class="pill ${M.easyPct>=98?'g':'w'}">${M.easyPct.toFixed(0)}%</span></div>
+        <div class="prog ${M.easyPct>=98?'g':''}"><i style="width:${M.easyPct}%"></i></div>
+        <div class="note">Atual <b>${M.curEasyEf.toFixed(2)}</b> vs seu melhor fácil <b>${M.bestEasyEf.toFixed(2)}</b>. Quanto mais perto de 100%, mais afiado seu motor aeróbico está. Cai depois de pausa e volta rápido com corridas fáceis.</div></div></section>`:''}
+    <section><div class="sechead"><h2>③ Distribuição de intensidade</h2><span class="tag">regra 80/20</span></div>
+      <div class="card">
+        <div class="barbox"><div class="bl">Fácil (Z1-2)</div><div class="bt"><i style="width:${p.easy}%;background:var(--good)"></i></div><div class="bv">${p.easy.toFixed(0)}%</div></div>
+        <div class="barbox"><div class="bl">Médio (Z3)</div><div class="bt"><i style="width:${p.mod}%;background:var(--warn)"></i></div><div class="bv">${p.mod.toFixed(0)}%</div></div>
+        <div class="barbox"><div class="bl">Forte (Z4-5)</div><div class="bt"><i style="width:${p.hard}%;background:var(--bad)"></i></div><div class="bv">${p.hard.toFixed(0)}%</div></div>
+        <div class="note">⚠️ <b>Seu maior ponto de evolução.</b> Você passa <b>${(p.mod+p.hard).toFixed(0)}%</b> do tempo em esforço médio-forte (a "<b>zona cinza</b>"). Os melhores correm ~80% bem fácil. Correr <b>mais devagar</b> nos dias fáceis te deixa <b>mais rápido</b> nas provas.</div></div></section>
+    ${hasEf?`<section><div class="sechead"><h2>④ Eficiência aeróbica</h2><span class="tag">IEA</span></div>
+      <div class="card"><div style="display:flex;align-items:baseline;gap:10px"><span class="big-num" style="color:var(--acc2)">${M.efRuns[M.efRuns.length-1].ef.toFixed(2)}</span><span class="soft">atual · pico ${M.efPeak.toFixed(2)}</span></div>
+        <div class="note">Velocidade por batimento. De <b>${M.efRuns[0].ef.toFixed(2)}</b> ao pico <b>${M.efPeak.toFixed(2)}</b>. Como você corre quase tudo em ritmo médio, o IEA fácil ainda tem teto — é o item ③ que destrava ele.</div></div></section>`:''}
+    <div class="foot">IEA, Termômetro de Carga e Eficiência fácil são cálculos próprios deste painel.<br>Atualizam a cada sincronização com o Strava.</div>`;
+}
+
+/* ===================== TABS / RENDER ALL ===================== */
+const R={hoje:renderHoje,evol:renderEvol,trein:renderTrein,metas:renderMetas,ins:renderIns};
+let curTab='hoje';
+function renderAll(){ Object.values(R).forEach(f=>{try{f();}catch(e){console.error(e);}}); }
+function showTab(t){ curTab=t; document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); $('t-'+t).classList.add('on');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t)); document.querySelector('.scroll').scrollTop=0; }
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.t));
+
+/* ===================== VIEW SWITCH + FLOW ===================== */
+function showView(v){ ['v-load','v-login','v-connect','v-app'].forEach(x=>$(x).classList.toggle('hide',x!==v)); }
+function applyAthlete(st){
+  const ath=st.athlete||{}; M.athleteName=ath.name||'';
+  $('hName').textContent=ath.name||'dKonrad Run';
+  $('hSync').textContent='sincronizado '+ago(st.meta&&st.meta.last_sync);
+  if(ath.profile_pic){ $('hAva').src=ath.profile_pic; $('hAva').style.display=''; $('hLogo').style.display='none'; }
+  else { $('hAva').style.display='none'; $('hLogo').style.display=''; }
+}
+function renderFromState(st){
+  buildACT(st.activities&&st.activities.items); compute(); applyAthlete(st); renderAll();
+}
+async function refresh(showT){
+  const ic=$('syncBtn').querySelector('svg'); ic.classList.add('spin');
+  try{ const res=await callFn('sync');
+    if(res&&res.connected===false){ showView('v-connect'); return; }
+    const st=await loadState(); renderFromState(st);
+    if(showT)toast('Sincronizado · '+((res&&res.count)||0)+' atividades');
+  }catch(e){ if(showT)toast('Erro ao sincronizar'); }
   finally{ ic.classList.remove('spin'); }
 }
-
 async function enterApp(){
-  show('v-app');
-  // 1) trata retorno do OAuth (?code=...)
-  const u = new URL(location.href);
-  const code = u.searchParams.get('code');
+  const u=new URL(location.href), code=u.searchParams.get('code');
   if(code){
-    const scope = u.searchParams.get('scope')||SCOPE;
-    history.replaceState({}, '', REDIRECT);     // limpa a URL
-    $('appBody').innerHTML = '<div class="spinbig"></div><p class="center muted" style="font-size:13px">Conectando ao Strava…</p>';
-    try{ const r = await callFn('exchange',{code,scope});
-      if(r.error){ toast('Falha ao conectar'); }
-    }catch(e){ toast('Falha ao conectar'); }
+    history.replaceState({},'',REDIRECT);
+    showView('v-load');
+    try{ const r=await callFn('exchange',{code,scope:u.searchParams.get('scope')||SCOPE});
+      if(r.error){ $('connErr').textContent='Falha ao conectar: '+(r.detail&&r.detail.message||r.error); showView('v-connect'); return; }
+    }catch(e){ showView('v-connect'); return; }
   }
-  // 2) carrega estado
-  const st = await loadState();
-  if(st.meta && st.meta.connected){ renderDash(st); refresh(false); }
-  else if(Object.keys(st).length && st.activities){ renderDash(st); }
-  else { renderConnect(); }
+  const st=await loadState();
+  if(st.meta&&st.meta.connected){ showView('v-app'); renderFromState(st); showTab('hoje'); refresh(false); }
+  else if(st.activities&&st.activities.items&&st.activities.items.length){ showView('v-app'); renderFromState(st); showTab('hoje'); }
+  else { showView('v-connect'); }
 }
-
 async function boot(){
-  const { data:{ session } } = await sb.auth.getSession();
-  if(session){ enterApp(); } else { show('v-login'); }
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)enterApp(); else showView('v-login');
 }
 
-/* login */
-$('loginBtn').onclick = async ()=>{
-  $('loginErr').textContent='';
-  const email=$('email').value.trim(), password=$('pass').value;
+/* login + buttons */
+$('loginBtn').onclick=async()=>{
+  $('loginErr').textContent=''; const email=$('email').value.trim(),password=$('pass').value;
   if(!email||!password){ $('loginErr').textContent='Preencha e-mail e senha.'; return; }
   $('loginBtn').textContent='Entrando…';
-  const { error } = await sb.auth.signInWithPassword({ email, password });
+  const {error}=await sb.auth.signInWithPassword({email,password});
   $('loginBtn').textContent='Entrar';
   if(error){ $('loginErr').textContent='E-mail ou senha inválidos.'; return; }
   enterApp();
 };
-$('pass').addEventListener('keydown', e=>{ if(e.key==='Enter') $('loginBtn').click(); });
-$('syncBtn').onclick = ()=>refresh(true);
-
-sb.auth.onAuthStateChange((_e,s)=>{ /* sessão compartilhada entre apps da mesma origin */ });
+$('pass').addEventListener('keydown',e=>{ if(e.key==='Enter')$('loginBtn').click(); });
+$('connectBtn').onclick=()=>{ location.href=AUTH_URL; };
+$('syncBtn').onclick=()=>refresh(true);
 boot();
 </script>
 </body>
