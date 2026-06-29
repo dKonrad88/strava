@@ -270,7 +270,8 @@ function buildACT(items){
     const cal=a.calories??(isRun?Math.round(km*62):0);
     const o={ d:(a.start||'').slice(0,10), type, km, s, el:a.elev_gain_m||0, re:a.relative_effort||0, cal,
       cad:a.avg_cadence||null, hr, indoor:!!a.indoor, name:a.name||'', date:new Date(a.start),
-      pace:(isRun&&km>0)?s/km:null, ef:(hr&&km>0&&isRun)?(km*1000/(s/60))/hr:null };
+      pace:(isRun&&km>0)?s/km:null, ef:(hr&&km>0&&isRun)?(km*1000/(s/60))/hr:null,
+      decoupling:(a.decoupling!=null?a.decoupling:null) };
     return o;
   }).filter(a=>a.date && !isNaN(a.date.getTime()));
 }
@@ -304,6 +305,36 @@ function gaugeSVG(ratio){
 
 /* ===================== COMPUTE ===================== */
 let M={};
+/* VDOT (Jack Daniels) + paces de treino */
+function vdotFromRun(r){ const v=r.km*1000/(r.s/60), t=r.s/60;
+  const p=0.8+0.1894393*Math.exp(-0.012778*t)+0.2989558*Math.exp(-0.1932605*t);
+  return (-4.60+0.182258*v+0.000104*v*v)/p; }
+function paceForIntensity(vdot,pct){ const a=0.000104,b=0.182258,c=-4.60-vdot*pct;
+  const v=(-b+Math.sqrt(b*b-4*a*c))/(2*a); return 60000/v; }
+/* Forma: CTL(fitness)/ATL(fadiga)/TSB(frescor) via EWMA do esforço relativo */
+function computeForm(all){ if(!all.length)return null;
+  const load={}; all.forEach(a=>{load[a.d]=(load[a.d]||0)+(a.re||0);});
+  const start=new Date(all[0].date); start.setHours(0,0,0,0);
+  const end=new Date(NOW); end.setHours(0,0,0,0);
+  let ctl=0,atl=0; const series=[];
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()), l=load[k]||0;
+    series.push({date:new Date(d),ctl,atl,tsb:ctl-atl}); ctl+=(l-ctl)/42; atl+=(l-atl)/7; }
+  const last=series[series.length-1];
+  return {ctl:last.ctl,atl:last.atl,tsb:last.tsb,series}; }
+function formChart(series){
+  const s=series.slice(-90),W=320,H=150,pl=6,pr=6,pt=14,pb=8;
+  const vals=s.flatMap(p=>[p.ctl,p.atl]); let mn=Math.min(...vals,0),mx=Math.max(...vals,1);
+  const n=s.length,X=i=>pl+(W-pl-pr)*(n<=1?.5:i/(n-1)),Y=v=>pt+(H-pt-pb)*(1-(v-mn)/(mx-mn||1));
+  const line=(key,col)=>`<polyline points="${s.map((p,i)=>X(i).toFixed(1)+','+Y(p[key]).toFixed(1)).join(' ')}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><text x="${pl}" y="11" fill="var(--mut2)" font-size="9">${Math.round(mx)}</text>${line('ctl','var(--info)')}${line('atl','var(--acc)')}</svg>`; }
+function formStatus(tsb){
+  let cls,lab; if(tsb>5){cls='g';lab='Fresco / afiado';}
+  else if(tsb>=-10){cls='i';lab='Equilíbrio';}
+  else if(tsb>=-30){cls='a';lab='Treino produtivo';}
+  else {cls='b';lab='Sobrecarga';}
+  return `<span class="pill ${cls}">${lab}</span> <span class="soft" style="font-size:12px">Frescor (TSB) ${tsb>0?'+':''}${Math.round(tsb)}</span>`; }
+function paceRow(emo,label,desc,val){ return `<div class="pr"><div class="pe">${emo}</div><div class="pm"><div class="pt">${label}</div><div class="pd">${desc}</div></div><div class="pv">${val}<small style="font-size:11px;color:var(--mut);font-weight:600">/km</small></div></div>`; }
 function compute(){
   const runs=ACT.filter(a=>a.type==='run').sort((a,b)=>a.date-b.date);
   const all=ACT.slice().sort((a,b)=>a.date-b.date);
@@ -347,6 +378,14 @@ function compute(){
   runs.forEach(r=>{ if(r.indoor)return; if(r.km>=5){b5=Math.min(b5,r.pace*5); if(r.pace<bp){bp=r.pace;fastRun=r;}} if(r.km>=10)b10=Math.min(b10,r.pace*10); });
   M.best={k5:isFinite(b5)?b5:null,k10:isFinite(b10)?b10:null,fastPace:isFinite(bp)?bp:null,fastRun};
   M.maxCal=runs.length?Math.max(...runs.map(r=>r.cal)):0;
+  // VDOT + paces (melhor corrida dos ultimos 90 dias)
+  const recent=runs.filter(r=>!r.indoor&&r.km>=3&&(NOW-r.date)/86400000<=90);
+  M.vdot=recent.length?Math.max(...recent.map(vdotFromRun)):null;
+  M.paces=M.vdot?{ facil:[paceForIntensity(M.vdot,0.74),paceForIntensity(M.vdot,0.65)],
+    maratona:paceForIntensity(M.vdot,0.84), limiar:paceForIntensity(M.vdot,0.88),
+    intervalo:paceForIntensity(M.vdot,0.97), repeticao:paceForIntensity(M.vdot,1.06) }:null;
+  // Forma
+  M.form=computeForm(all);
 }
 
 /* ===================== RENDER: HOJE ===================== */
@@ -435,6 +474,12 @@ function renderEvol(){
     <section><div class="sechead"><h2>Cadência</h2><span class="tag">passos/min</span></div>
       <div class="card">${cadVals.length?lineChart(cadVals,{color:'var(--info)',fmt:x=>Math.round(x)}):'<p class="soft center" style="font-size:13px">Sem dados.</p>'}
         ${cadVals.length?`<div class="chlbl"><span>média ${(cadVals.reduce((a,b)=>a+b,0)/cadVals.length).toFixed(0)} spm</span><span>alvo 85–90</span></div>`:''}</div></section>
+    ${M.form?`<section><div class="sechead"><h2>Forma: Fitness × Fadiga</h2><span class="tag">CTL/ATL/TSB</span></div>
+      <div class="card">${formChart(M.form.series)}
+        <div class="legend" style="display:flex;gap:14px;font-size:11px;color:var(--mut);margin-top:8px"><span><i style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--info);margin-right:5px"></i>Fitness ${Math.round(M.form.ctl)}</span><span><i style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--acc);margin-right:5px"></i>Fadiga ${Math.round(M.form.atl)}</span></div>
+        <div style="margin-top:10px">${formStatus(M.form.tsb)}</div>
+        <div class="note">Azul = <b>Fitness</b> (forma de fundo, sobe devagar). Laranja = <b>Fadiga</b> (cansaço recente). <b>Frescor = Fitness − Fadiga</b>: bem positivo = descansado/afiado pra prova; bem negativo = construindo forte (ou sobrecarga). Pra mirar os 21k, você quer chegar com Fitness alto e Frescor levemente positivo.</div>
+      </div></section>`:''}
     <section><div class="sechead"><h2>Mês a mês</h2></div>
       <div class="card" style="padding:6px 13px 12px"><table class="t">
         <tr><th>Mês</th><th>Corridas</th><th>Km</th><th>Pace</th><th>Maior</th></tr>
@@ -468,6 +513,7 @@ function renderTrein(){
         <div class="mini"><div class="mv">${a.cad?a.cad.toFixed(0):'—'}</div><div class="ml">Cadência</div></div>
         <div class="mini"><div class="mv">${a.cal||'—'}</div><div class="ml">Kcal</div></div>
         <div class="mini"><div class="mv">${a.ef?a.ef.toFixed(2):'—'}</div><div class="ml">IEA</div></div>
+        <div class="mini"><div class="mv">${a.decoupling!=null?a.decoupling+'%':'—'}</div><div class="ml">Desacopl.</div></div>
       </div><div class="note">${cmp}</div></div>`;
     } else {
       det=`<div class="detail" id="d${id}"><div class="grid4">
@@ -502,6 +548,18 @@ function renderMetas(){
   } else preds='<p class="soft center" style="font-size:13px;padding:14px">Precisa de uma corrida ≥5 km pra estimar.</p>';
   const meta21t=ref?clock(riegel(ref.t,ref.d,21.0975)):'—';
   $('t-metas').innerHTML=`
+    ${M.vdot?`<section><div class="sechead"><h2>Seu VDOT & paces de treino</h2><span class="tag">Jack Daniels</span></div>
+      <div class="card">
+        <div style="display:flex;align-items:baseline;gap:10px"><span class="big-num" style="color:var(--acc2)">${M.vdot.toFixed(1)}</span><span class="soft">VDOT · seu nível de condicionamento</span></div>
+        <div style="margin-top:12px">
+          ${paceRow('😌','Fácil','base / regenerativo · a maioria dos km',pace(M.paces.facil[0])+'–'+pace(M.paces.facil[1]))}
+          ${paceRow('🏁','Maratona','ritmo de prova longa',pace(M.paces.maratona))}
+          ${paceRow('🔥','Limiar / Tempo','~20-40 min contínuos',pace(M.paces.limiar))}
+          ${paceRow('⚡','Intervalo','tiros de 3-5 min (VO₂máx)',pace(M.paces.intervalo))}
+          ${paceRow('💨','Tiros (R)','repetições curtas, 200-400 m',pace(M.paces.repeticao))}
+        </div>
+        <div class="note">Calculado da sua melhor corrida recente. <b>Rode o "Fácil" na maioria dos dias</b> e guarde Limiar/Intervalo pra 1–2 treinos/semana — é o mapa exato pra sair da zona cinza.</div>
+      </div></section>`:''}
     <section><div class="sechead"><h2>Previsão de provas</h2><span class="tag">Riegel</span></div>
       <div class="card" style="padding:6px 13px">${preds}
         <div class="note">Estimado pelo seu melhor pace sustentado. Previsões assumem treino específico — quanto mais longo, mais otimista. Pra baixar o tempo, o segredo está nos km fáceis (Insights).</div></div></section>
@@ -529,6 +587,8 @@ function renderIns(){
   else if(a<=1.5){az='Atenção';ac='w';at='Carga subiu rápido. Segure o ritmo de aumento esta semana.';}
   else {az='Risco de lesão';ac='b';at='Pico de carga muito acima da base — janela clássica de lesão. Reduza.';}
   const p=M.polPct, hasEf=M.efRuns.length>=1, hasEasy=M.bestEasyEf>0;
+  const dec=M.runs.filter(r=>r.decoupling!=null).sort((a,b)=>b.date-a.date)[0];
+  const decCol=dec?(dec.decoupling<5?'var(--good)':(dec.decoupling<10?'var(--warn)':'var(--bad)')):'';
   $('t-ins').innerHTML=`
     <div class="foot" style="margin:0 0 14px;text-align:left;color:var(--mut)">Indicadores que o Strava/Garmin <b style="color:var(--txt)">não mostram assim</b> — pra te fazer evoluir, não só registrar.</div>
     <section><div class="sechead"><h2>① Termômetro de carga</h2><span class="tag">risco · ACWR</span></div>
@@ -547,7 +607,10 @@ function renderIns(){
     ${hasEf?`<section><div class="sechead"><h2>④ Eficiência aeróbica</h2><span class="tag">IEA</span></div>
       <div class="card"><div style="display:flex;align-items:baseline;gap:10px"><span class="big-num" style="color:var(--acc2)">${M.efRuns[M.efRuns.length-1].ef.toFixed(2)}</span><span class="soft">atual · pico ${M.efPeak.toFixed(2)}</span></div>
         <div class="note">Velocidade por batimento. De <b>${M.efRuns[0].ef.toFixed(2)}</b> ao pico <b>${M.efPeak.toFixed(2)}</b>. Como você corre quase tudo em ritmo médio, o IEA fácil ainda tem teto — é o item ③ que destrava ele.</div></div></section>`:''}
-    <div class="foot">IEA, Termômetro de Carga e Eficiência fácil são cálculos próprios deste painel.<br>Atualizam a cada sincronização com o Strava.</div>`;
+    ${dec?`<section><div class="sechead"><h2>⑤ Desacoplamento aeróbico</h2><span class="tag">Pa:HR · base p/ 21k</span></div>
+      <div class="card"><div style="display:flex;align-items:baseline;gap:10px"><span class="big-num" style="color:${decCol}">${dec.decoupling}%</span><span class="soft">${dmy(dec.date)} · ${dec.km.toFixed(1)} km</span></div>
+        <div class="note">Quanto seu ritmo "descolou" da FC na 2ª metade do longo. <b>&lt;5% = base sólida</b> (aguenta a distância sem despencar). 5–10% = ok, dá pra melhorar. <b>&gt;10% = a base ainda cede no fim</b> — mais longões fáceis resolvem. É o teste-chave pra saber se você está pronto pros 21k.</div></div></section>`:''}
+    <div class="foot">IEA, Carga, Eficiência, Forma e Desacoplamento são cálculos próprios deste painel.<br>Atualizam a cada sincronização com o Strava.</div>`;
 }
 
 /* ===================== RENDER: PRONTIDÃO (Garmin) ===================== */
