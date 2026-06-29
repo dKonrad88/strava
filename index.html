@@ -94,7 +94,8 @@
   .seg button.on{background:var(--acc);color:#fff}
 
   .act{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--card);border:1px solid var(--line);border-radius:13px;cursor:pointer}
-  .act+.act{margin-top:8px}.act:active{background:var(--card2)}
+  .act+.act{margin-top:13px}.act:active{background:var(--card2)}
+  .act .km{color:var(--acc2);font-weight:800;font-size:12.5px}
   .ic{width:37px;height:37px;border-radius:11px;display:grid;place-items:center;font-size:16px;flex:0 0 auto}
   .ic.run{background:rgba(252,76,2,.13)}.ic.gym{background:rgba(90,169,255,.13)}.ic.ride{background:rgba(61,220,132,.13)}.ic.other{background:rgba(138,152,171,.13)}
   .act .m{flex:1;min-width:0}.act .t{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -446,7 +447,7 @@ function renderTrein(){
   const rows=list.map((a,i)=>{
     const id='a'+i, ic=a.type==='gym'?'gym':(a.type==='ride'?'ride':(a.type==='run'?'run':'other'));
     const icon=a.type==='gym'?'🏋️':(a.type==='ride'?'🚴':(a.type==='run'?'🏃':'📍'));
-    const main=a.type==='gym'||a.type==='other'?dur(a.s):a.km.toFixed(2)+' km';
+    const main=(a.type==='gym'||a.type==='other')?dur(a.s):`<span class="km">${a.km.toFixed(2)} km</span>`;
     const right=a.type==='gym'||a.type==='other'?`<div class="p2">esforço ${a.re||'—'}</div>`:`<div class="p">${pace(a.pace)}</div><div class="p2">/km${a.hr?' · '+Math.round(a.hr)+'bpm':''}</div>`;
     let det='';
     if(a.type==='run'){
