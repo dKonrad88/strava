@@ -94,7 +94,8 @@
   .seg button.on{background:var(--acc);color:#fff}
 
   .act{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--card);border:1px solid var(--line);border-radius:13px;cursor:pointer}
-  .act+.act{margin-top:13px}.act:active{background:var(--card2)}
+  .act:active{background:var(--card2)}
+  .trow+.trow{margin-top:13px}
   .act .km{color:var(--acc2);font-weight:800;font-size:12.5px}
   .ic{width:37px;height:37px;border-radius:11px;display:grid;place-items:center;font-size:16px;flex:0 0 auto}
   .ic.run{background:rgba(252,76,2,.13)}.ic.gym{background:rgba(90,169,255,.13)}.ic.ride{background:rgba(61,220,132,.13)}.ic.other{background:rgba(138,152,171,.13)}
@@ -473,7 +474,7 @@ function renderTrein(){
         <div class="mini"><div class="mv">${a.cal||'—'}</div><div class="ml">Kcal</div></div>
       </div><div class="note">Entra no seu <b>índice de carga</b> e ajuda a economia de corrida e prevenção de lesão.</div></div>`;
     }
-    return `<div><div class="act" data-d="d${id}"><div class="ic ${ic}">${icon}</div>
+    return `<div class="trow"><div class="act" data-d="d${id}"><div class="ic ${ic}">${icon}</div>
       <div class="m"><div class="t">${a.name||(a.type==='gym'?'Musculação':'Atividade')}</div>
         <div class="s">${pad(a.date.getDate())} ${MES[a.date.getMonth()]} · ${main}${a.indoor?' · indoor':''}</div></div>
       <div class="rt">${right}</div><div class="chev">›</div></div>${det}</div>`;
