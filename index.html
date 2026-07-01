@@ -16,14 +16,24 @@
     --line:#222d3a; --txt:#e8eef6; --mut:#8a98ab; --mut2:#5d6b7d;
     --acc:#fc4c02; --acc2:#2ad4c4; --good:#3ddc84; --warn:#ffc24b; --bad:#ff5d6c; --info:#5aa9ff;
     --grad:linear-gradient(135deg,#fc4c02,#ff8a3d);
+    --ink:var(--ink);
     --r:16px;
   }
+  [data-theme="light"]{
+    --bg:#eef1f6; --bg2:#e4e8f0; --card:#ffffff; --card2:#f1f4f9;
+    --line:#d9dfe9; --txt:#141a22; --mut:#5b6675; --mut2:#8a95a5; --ink:#33404f;
+  }
+  [data-theme="light"] body{background:#dfe4ec}
+  [data-theme="light"] header{background:rgba(255,255,255,.9)}
+  [data-theme="light"] nav{background:rgba(255,255,255,.95)}
+  [data-theme="light"] .hero{background:linear-gradient(135deg,#ffffff,#e9eff7)}
+  [data-theme="light"] .phone{border-color:#cfd6e2}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
   html,body{background:#05080c;color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
   a{color:var(--acc)}
-  .frame{min-height:100vh;display:flex;align-items:center;justify-content:center}
-  .phone{width:100%;max-width:440px;height:100vh;background:var(--bg);position:relative;display:flex;flex-direction:column;overflow:hidden}
+  .frame{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center}
+  .phone{width:100%;max-width:440px;height:100vh;height:100dvh;background:var(--bg);position:relative;display:flex;flex-direction:column;overflow:hidden}
   @media(min-width:760px){
     body{background:radial-gradient(120% 120% at 50% 0%,#10161e,#05080c)}
     .frame{padding:24px}
@@ -84,10 +94,10 @@
   .coach{border:1px solid rgba(42,212,196,.25);background:linear-gradient(135deg,rgba(42,212,196,.10),rgba(42,212,196,.02))}
   .coach .h{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;margin-bottom:8px}
   .coach .dot{width:9px;height:9px;border-radius:50%;background:var(--acc2);box-shadow:0 0 0 4px rgba(42,212,196,.16)}
-  .coach p{margin:6px 0;font-size:13px;line-height:1.5;color:#cdd8e6}
+  .coach p{margin:6px 0;font-size:13px;line-height:1.5;color:var(--ink)}
 
   .gauge{display:flex;align-items:center;gap:16px}
-  .gtxt{font-size:13px;line-height:1.5;color:#cdd8e6}
+  .gtxt{font-size:13px;line-height:1.5;color:var(--ink)}
 
   .prog{height:10px;border-radius:999px;background:var(--card2);overflow:hidden;margin-top:8px}
   .prog>i{display:block;height:100%;border-radius:999px;background:var(--grad)}
@@ -113,7 +123,7 @@
   .grid4{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
   .mini{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px}
   .mini .mv{font-size:15px;font-weight:800}.mini .ml{font-size:10px;color:var(--mut);margin-top:2px}
-  .note{font-size:12px;color:#bcc8d8;line-height:1.5;margin-top:10px;padding:9px 11px;background:rgba(42,212,196,.06);border-left:3px solid var(--acc2);border-radius:7px}
+  .note{font-size:12px;color:var(--ink);line-height:1.5;margin-top:10px;padding:9px 11px;background:rgba(42,212,196,.06);border-left:3px solid var(--acc2);border-radius:7px}
 
   .chart{width:100%;display:block}
   .chlbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut2);margin-top:4px}
@@ -133,7 +143,7 @@
   .pr:first-child{border-top:0}.pr .pe{font-size:19px;width:28px;text-align:center}
   .pr .pm{flex:1}.pr .pm .pt{font-size:13px;font-weight:600}.pr .pm .pd{font-size:11px;color:var(--mut)}
   .pr .pv{font-size:16px;font-weight:800;color:var(--acc)}
-  .ins{font-size:13px;line-height:1.55;color:#cdd8e6}.ins b{color:var(--txt)}
+  .ins{font-size:13px;line-height:1.55;color:var(--ink)}.ins b{color:var(--txt)}
   .big-num{font-size:29px;font-weight:800}
 
   /* nav */
@@ -196,9 +206,12 @@
         <div class="logo" id="hLogo">dK</div>
         <div><h1 id="hName">dKonrad Run</h1><small id="hSync">—</small></div>
       </div>
-      <button class="rbtn" id="syncBtn" title="Sincronizar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="rbtn" id="themeBtn" title="Tema claro/escuro" style="font-size:17px">☀️</button>
+        <button class="rbtn" id="syncBtn" title="Sincronizar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
     </header>
     <div class="scroll">
       <main>
@@ -418,7 +431,7 @@ function renderHoje(){
     </div>
     <section style="margin-top:14px"><div class="card coach">
       <div class="h"><span class="dot"></span> Coach do dia ${c.pill}</div>
-      <p>${c.txt}</p><p style="color:#9fb0c4">${c.extra}</p>
+      <p>${c.txt}</p><p style="color:var(--ink)">${c.extra}</p>
     </div></section>
     <section>
       <div class="sechead"><h2>Últimos 7 dias</h2><span class="tag">${M.last7sess} sessões</span></div>
@@ -654,7 +667,7 @@ function renderProntidao(){
         <div style="font-size:44px;font-weight:800;color:${col};line-height:1">${r.score}</div>
         <div><span class="pill" style="color:${col};border-color:${col}">${lab}</span><div class="sub" style="margin-top:6px">de 100 · fonte: ${r.src}</div></div>
       </div>
-      <p class="sub" style="margin-top:11px;color:#cdd8e6;line-height:1.5">${rec}</p>
+      <p class="sub" style="margin-top:11px;color:var(--ink);line-height:1.5">${rec}</p>
     </div>
     <section style="margin-top:14px"><div class="sechead"><h2>Sinais de hoje</h2><span class="tag">Garmin</span></div>
       <div class="kpis">
@@ -734,6 +747,9 @@ $('loginBtn').onclick=async()=>{
 $('pass').addEventListener('keydown',e=>{ if(e.key==='Enter')$('loginBtn').click(); });
 $('connectBtn').onclick=()=>{ location.href=AUTH_URL; };
 $('syncBtn').onclick=()=>refresh(true);
+function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('dkrun_theme',t);}catch(e){} $('themeBtn').textContent=t==='light'?'🌙':'☀️'; }
+$('themeBtn').onclick=()=>applyTheme(document.documentElement.getAttribute('data-theme')==='light'?'dark':'light');
+applyTheme((function(){try{return localStorage.getItem('dkrun_theme');}catch(e){return null;}})()||'dark');
 boot();
 </script>
 </body>
